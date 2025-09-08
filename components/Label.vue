@@ -3,10 +3,7 @@ defineProps({});
 </script>
 
 <template>
-  <label
-      v-bind="$attrs"
-      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-  >
+  <label v-bind="$attrs" class="block mb-2 text-sm font-medium text-gray-900">
     <slot />
   </label>
 </template>

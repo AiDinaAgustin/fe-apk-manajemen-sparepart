@@ -1,16 +1,18 @@
 export default defineNuxtRouteMiddleware((to) => {
-    const authToken = useCookie('auth_token');
+  const authToken = useCookie("access_token");
 
-    const protectedRoutes = ['/dashboard', '/**'];
+  const protectedRoutes = ["/dashboard", "/**"];
 
-    if (authToken.value && (to.path === '/login' || to.path === '/register')) {
-        return navigateTo('/dashboard');
-    }
+  if (authToken.value && (to.path === "/login" || to.path === "/register")) {
+    return navigateTo("/dashboard");
+  }
 
-    if (
-        !authToken.value &&
-        protectedRoutes.some(path => to.path === path || to.path.startsWith(path + '/'))
-    ) {
-        return navigateTo('/login');
-    }
+  if (
+    !authToken.value &&
+    protectedRoutes.some(
+      (path) => to.path === path || to.path.startsWith(path + "/"),
+    )
+  ) {
+    return navigateTo("/login");
+  }
 });
