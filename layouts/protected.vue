@@ -10,7 +10,7 @@ import Footer from "/components/Footer.vue";
         <Navbar />
       </slot>
     </header>
-    <main class="flex-grow">
+    <main class="flex-grow p-6">
       <slot />
     </main>
     <footer>
