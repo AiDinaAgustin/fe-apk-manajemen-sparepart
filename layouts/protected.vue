@@ -13,10 +13,5 @@ import Footer from "/components/Footer.vue";
     <main class="flex-grow p-6">
       <slot />
     </main>
-    <footer>
-      <slot name="footer">
-        <Footer />
-      </slot>
-    </footer>
   </div>
 </template>
