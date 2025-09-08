@@ -297,9 +297,9 @@ onMounted(() => {
                 scope="row"
                 class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
               >
-                {{ transaction.transaction_code }}
+                {{ transaction.no_transaksi }}
               </th>
-              <td class="px-6 py-4">{{ formatDate(transaction.date) }}</td>
+              <td class="px-6 py-4">{{ formatDate(transaction.created_at) }}</td>
               <td class="px-6 py-4">{{ transaction.user?.name || "-" }}</td>
               <td class="px-6 py-4">
                 <span
