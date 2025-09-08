@@ -1,11 +1,11 @@
-export const useUser = () => {
+export const useUsers = () => {
   const config = useRuntimeConfig();
   const apiUrl = config.public.apiUrl;
   const tokenCookie = useCookie("access_token");
   const userCookie = useCookie("user_data");
   const permissionsCookie = useCookie("user_permissions");
   const rolesCookie = useCookie("user_roles");
-//   const { getAuthHeaders } = useAuthApi();
+  //   const { getAuthHeaders } = useAuthApi();
 
   /**
    * Get all users

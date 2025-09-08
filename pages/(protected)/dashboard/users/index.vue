@@ -2,25 +2,25 @@
 import { ref, onMounted } from "vue";
 import { useFlowbite } from "/composables/useFlowbite.js";
 import { initFlowbite } from "flowbite";
-import { useUser } from "/composables/useUser";
+import { useUsers } from "/composables/services/useUsers";
 import { useRole } from "/composables/useRole";
 
 useHead({
   title: "User Management",
 });
 
-const { getUsers, createUser, updateUser, deleteUser, assignRoles } = useUser();
+const { getUsers, createUser, updateUser, deleteUser, assignRoles } =
+  useUsers();
 const users = ref([]);
 const { getRoles } = useRole();
 const loading = ref(true);
 const error = ref(null);
 
-// Form fields
 const name = ref("");
 const email = ref("");
 const password = ref("");
 const role = ref("user");
-const availableRoles = ref(["admin", "user", "manager"]); // This should come from your backend
+const availableRoles = ref(["admin", "user", "manager"]);
 const selectedRoles = ref([]);
 const formError = ref("");
 const deleteError = ref("");
@@ -46,10 +46,9 @@ const fetchUsers = async () => {
 const fetchRoles = async () => {
   try {
     const roles = await getRoles();
-    availableRoles.value = roles.map(role => role.name);
+    availableRoles.value = roles.map((role) => role.name);
   } catch (err) {
     console.error("Error fetching roles:", err);
-    // Default roles if API fails
     availableRoles.value = ["admin", "user"];
   }
 };
@@ -60,7 +59,8 @@ const openModal = (modalId) => {
     let backdrop = document.querySelector(".modal-backdrop");
     if (!backdrop) {
       backdrop = document.createElement("div");
-      backdrop.className = "modal-backdrop bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40";
+      backdrop.className =
+        "modal-backdrop bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40";
       document.body.appendChild(backdrop);
     }
 
@@ -107,7 +107,7 @@ const openEditModal = (user) => {
   editId.value = user.id;
   name.value = user.name;
   email.value = user.email;
-  password.value = ""; // Don't populate password for security
+  password.value = "";
   if (user.roles && user.roles.length > 0) {
     role.value = user.roles[0].name || "user";
   }
@@ -127,8 +127,8 @@ const openDeleteModal = (user) => {
 const openRolesModal = (user) => {
   userToEditRoles.value = user;
   if (user.roles && Array.isArray(user.roles)) {
-    selectedRoles.value = user.roles.map(role => 
-      typeof role === 'string' ? role : role.name
+    selectedRoles.value = user.roles.map((role) =>
+      typeof role === "string" ? role : role.name,
     );
   } else {
     selectedRoles.value = [];
@@ -182,7 +182,7 @@ const handleDelete = async () => {
 
 const handleRoleToggle = (roleName) => {
   if (selectedRoles.value.includes(roleName)) {
-    selectedRoles.value = selectedRoles.value.filter(r => r !== roleName);
+    selectedRoles.value = selectedRoles.value.filter((r) => r !== roleName);
   } else {
     selectedRoles.value.push(roleName);
   }
@@ -196,7 +196,10 @@ const handleRolesSubmit = async () => {
     closeModal("roles-modal");
     await fetchUsers();
   } catch (error) {
-    console.error(`Failed to update roles for user ${userToEditRoles.value.id}`, error);
+    console.error(
+      `Failed to update roles for user ${userToEditRoles.value.id}`,
+      error,
+    );
   } finally {
     userToEditRoles.value = null;
   }
@@ -211,7 +214,7 @@ onMounted(() => {
     initFlowbite();
   });
   fetchUsers();
-    fetchRoles();
+  fetchRoles();
 });
 </script>
 
@@ -233,7 +236,10 @@ onMounted(() => {
         <div v-else-if="error" class="p-4 text-center text-red-500">
           <p>Error: {{ error }}</p>
         </div>
-        <table v-else class="w-full text-sm text-left rtl:text-right text-gray-500">
+        <table
+          v-else
+          class="w-full text-sm text-left rtl:text-right text-gray-500"
+        >
           <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               <th scope="col" class="px-6 py-3">No</th>
@@ -250,18 +256,24 @@ onMounted(() => {
               class="odd:bg-white even:bg-gray-50 border-b border-gray-200"
             >
               <td class="px-6 py-4">{{ index + 1 }}</td>
-              <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+              <th
+                scope="row"
+                class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+              >
                 {{ user.name }}
               </th>
               <td class="px-6 py-4">{{ user.email }}</td>
               <td class="px-6 py-4">
-                <div v-if="user.roles && user.roles.length > 0" class="flex flex-wrap gap-1">
-                  <span 
-                    v-for="role in user.roles" 
-                    :key="typeof role === 'string' ? role : role.name" 
+                <div
+                  v-if="user.roles && user.roles.length > 0"
+                  class="flex flex-wrap gap-1"
+                >
+                  <span
+                    v-for="role in user.roles"
+                    :key="typeof role === 'string' ? role : role.name"
                     class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
                   >
-                    {{ typeof role === 'string' ? role : role.name }}
+                    {{ typeof role === "string" ? role : role.name }}
                   </span>
                 </div>
                 <span v-else class="text-gray-400">No roles assigned</span>
@@ -340,7 +352,6 @@ onMounted(() => {
         </table>
       </div>
 
-      <!-- Create/Edit User Modal -->
       <div
         id="crud-modal"
         tabindex="-1"
@@ -349,7 +360,9 @@ onMounted(() => {
       >
         <div class="relative p-4 w-full max-w-md max-h-full">
           <div class="relative bg-white rounded-lg shadow-sm">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+            <div
+              class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200"
+            >
               <h3 class="text-lg font-semibold text-gray-900">
                 {{ isEditing ? "Edit User" : "Create New User" }}
               </h3>
@@ -381,16 +394,30 @@ onMounted(() => {
               <div class="grid gap-4 mb-4 grid-cols-1">
                 <div>
                   <Label for="name">Name</Label>
-                  <Input v-model="name" type="text" id="name" placeholder="Enter user name" required />
+                  <Input
+                    v-model="name"
+                    type="text"
+                    id="name"
+                    placeholder="Enter user name"
+                    required
+                  />
                 </div>
                 <div>
                   <Label for="email">Email</Label>
-                  <Input v-model="email" type="email" id="email" placeholder="name@example.com" required />
+                  <Input
+                    v-model="email"
+                    type="email"
+                    id="email"
+                    placeholder="name@example.com"
+                    required
+                  />
                 </div>
                 <div>
                   <Label for="password">
                     Password
-                    <span v-if="isEditing" class="ml-1 text-xs text-gray-500">(Leave empty to keep current)</span>
+                    <span v-if="isEditing" class="ml-1 text-xs text-gray-500"
+                      >(Leave empty to keep current)</span
+                    >
                   </Label>
                   <Input
                     v-model="password"
@@ -408,7 +435,11 @@ onMounted(() => {
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     required
                   >
-                    <option v-for="availableRole in availableRoles" :key="availableRole" :value="availableRole">
+                    <option
+                      v-for="availableRole in availableRoles"
+                      :key="availableRole"
+                      :value="availableRole"
+                    >
                       {{ availableRole }}
                     </option>
                   </select>
@@ -417,7 +448,10 @@ onMounted(() => {
               <div v-if="formError" class="text-red-500 mb-4">
                 {{ formError }}
               </div>
-              <Button type="submit" class="inline-flex items-center bg-blue-700 hover:bg-blue-800">
+              <Button
+                type="submit"
+                class="inline-flex items-center bg-blue-700 hover:bg-blue-800"
+              >
                 <svg
                   v-if="!isEditing"
                   class="me-1 -ms-1 w-5 h-5"
@@ -449,7 +483,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Delete Confirmation Modal -->
       <div
         id="delete-modal"
         tabindex="-1"
@@ -499,8 +532,14 @@ onMounted(() => {
                 Are you sure you want to delete this user?
               </h3>
               <div v-if="userToDelete" class="mb-5 p-3 bg-gray-50 rounded-lg">
-                <p><span class="font-semibold">Name:</span> {{ userToDelete.name }}</p>
-                <p><span class="font-semibold">Email:</span> {{ userToDelete.email }}</p>
+                <p>
+                  <span class="font-semibold">Name:</span>
+                  {{ userToDelete.name }}
+                </p>
+                <p>
+                  <span class="font-semibold">Email:</span>
+                  {{ userToDelete.email }}
+                </p>
               </div>
               <div v-if="deleteError" class="text-red-500 mb-4">
                 {{ deleteError }}
@@ -524,7 +563,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Roles Management Modal -->
       <div
         id="roles-modal"
         tabindex="-1"
@@ -532,7 +570,9 @@ onMounted(() => {
       >
         <div class="relative p-4 w-full max-w-md max-h-full">
           <div class="relative bg-white rounded-lg shadow-sm">
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200">
+            <div
+              class="flex items-center justify-between p-4 md:p-5 border-b rounded-t border-gray-200"
+            >
               <h3 class="text-lg font-semibold text-gray-900">
                 Manage User Roles
               </h3>
@@ -562,9 +602,15 @@ onMounted(() => {
 
             <div class="p-4 md:p-5">
               <div v-if="userToEditRoles" class="mb-5">
-                <p class="font-medium text-gray-700">Assign roles to {{ userToEditRoles.name }}</p>
+                <p class="font-medium text-gray-700">
+                  Assign roles to {{ userToEditRoles.name }}
+                </p>
                 <div class="mt-4 space-y-2">
-                  <div v-for="availableRole in availableRoles" :key="availableRole" class="flex items-center">
+                  <div
+                    v-for="availableRole in availableRoles"
+                    :key="availableRole"
+                    class="flex items-center"
+                  >
                     <input
                       type="checkbox"
                       :id="`role-${availableRole}`"
@@ -572,7 +618,10 @@ onMounted(() => {
                       @change="handleRoleToggle(availableRole)"
                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label :for="`role-${availableRole}`" class="ml-2 text-sm font-medium text-gray-900">
+                    <label
+                      :for="`role-${availableRole}`"
+                      class="ml-2 text-sm font-medium text-gray-900"
+                    >
                       {{ availableRole }}
                     </label>
                   </div>
