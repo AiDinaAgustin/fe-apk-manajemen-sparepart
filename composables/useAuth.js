@@ -47,29 +47,13 @@ export const useAuthApi = () => {
     }
   };
 
-  const logout = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/logout`, {
-        method: "POST",
-        headers: getAuthHeaders(),
-      });
+  const logout = () => {
+    tokenCookie.value = null;
+    userCookie.value = null;
+    permissionsCookie.value = null;
+    rolesCookie.value = null;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error: ${response.status}`);
-      }
-
-      tokenCookie.value = null;
-      userCookie.value = null;
-      permissionsCookie.value = null;
-      rolesCookie.value = null;
-
-      navigateTo("/login");
-      return await response.json();
-    } catch (error) {
-      console.error("Failed to logout:", error);
-      throw error;
-    }
+    navigateTo("/login");
   };
 
   const hasPermission = (permission) => {

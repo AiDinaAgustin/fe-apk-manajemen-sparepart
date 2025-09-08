@@ -1,29 +1,49 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useFlowbite } from "/composables/useFlowbite";
 import { initFlowbite } from "flowbite";
 import { useAuthApi } from "/composables/useAuth";
 
-const { logout } = useAuthApi();
+const { hasPermission } = useAuthApi();
 
-const navLinks = [
-  { text: "Dashboard", to: "/dashboard", current: true },
-  { text: "Users", to: "/users", current: false },
-  { text: "Spareparts", to: "/spareparts", current: false },
-  { text: "Transactions", to: "/transactions", current: false },
-  { text: "Reports", to: "/reports", current: false },
+const allNavLinks = [
+  { text: "Dashboard", to: "/dashboard", permission: null },
+  { text: "Users", to: "/dashboard/users", permission: "user.read" },
+  {
+    text: "Spareparts",
+    to: "/dashboard/spareparts",
+    permission: "sparepart.read",
+  },
+  {
+    text: "Transactions",
+    to: "/dashboard/transactions",
+    permission: ["transaction.read_all", "transaction.read_own"],
+  },
+  { text: "Reports", to: "/dashboard/reports", permission: "report.read" },
 ];
 
-const handleLogout = async () => {
-  try {
-    await logout();
-    navigateTo("/login");
-  } catch (error) {
-    console.error("Logout failed:", error);
-    const tokenCookie = useCookie("access_token");
-    tokenCookie.value = null;
-    navigateTo("/login");
-  }
+const navLinks = computed(() => {
+  return allNavLinks.filter((link) => {
+    if (!link.permission) return true;
+    if (Array.isArray(link.permission)) {
+      return link.permission.some((perm) => hasPermission(perm));
+    }
+    return hasPermission(link.permission);
+  });
+});
+
+const handleLogout = () => {
+  const tokenCookie = useCookie("access_token");
+  const userCookie = useCookie("user_data");
+  const permissionsCookie = useCookie("user_permissions");
+  const rolesCookie = useCookie("user_roles");
+
+  tokenCookie.value = null;
+  userCookie.value = null;
+  permissionsCookie.value = null;
+  rolesCookie.value = null;
+
+  navigateTo("/login");
 };
 
 onMounted(() => {

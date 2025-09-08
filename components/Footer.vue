@@ -1,15 +1,36 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, computed } from "vue";
 import { useFlowbite } from "/composables/useFlowbite";
 import { initFlowbite } from "flowbite";
+import { useAuthApi } from "/composables/useAuth";
 
+const { hasPermission } = useAuthApi();
 const yearSuffix = new Date().getFullYear();
-const navLinks = [
-  { text: "Dashboard", to: "/dashboard" },
-  { text: "Users", to: "/users" },
-  { text: "Spareparts", to: "/spareparts" },
-  { text: "Transactions", to: "/transactions" },
+
+const allNavLinks = [
+  { text: "Dashboard", to: "/dashboard", permission: null },
+  { text: "Users", to: "/dashboard/users", permission: "user.read" },
+  {
+    text: "Spareparts",
+    to: "/dashboard/spareparts",
+    permission: "sparepart.read",
+  },
+  {
+    text: "Transactions",
+    to: "/dashboard/transactions",
+    permission: ["transaction.read_all", "transaction.read_own"],
+  },
 ];
+
+const navLinks = computed(() => {
+  return allNavLinks.filter((link) => {
+    if (!link.permission) return true;
+    if (Array.isArray(link.permission)) {
+      return link.permission.some((perm) => hasPermission(perm));
+    }
+    return hasPermission(link.permission);
+  });
+});
 
 onMounted(() => {
   useFlowbite(() => {
