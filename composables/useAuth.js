@@ -2,6 +2,9 @@ export const useAuthApi = () => {
   const config = useRuntimeConfig();
   const apiUrl = config.public.apiUrl;
   const tokenCookie = useCookie("access_token");
+  const userCookie = useCookie("user_data");
+  const permissionsCookie = useCookie("user_permissions");
+  const rolesCookie = useCookie("user_roles");
 
   const getBasicHeaders = () => {
     return {
@@ -31,29 +34,15 @@ export const useAuthApi = () => {
 
       const result = await response.json();
       tokenCookie.value = result.access_token;
+
+      userCookie.value = result.user;
+      permissionsCookie.value = result.user.all_permissions;
+      rolesCookie.value = result.user.roles.map((role) => role.name);
+
+      navigateTo("/dashboard");
       return result;
     } catch (error) {
       console.error("Failed to login:", error);
-      throw error;
-    }
-  };
-
-  const register = async (userData) => {
-    try {
-      const response = await fetch(`${apiUrl}/register`, {
-        method: "POST",
-        headers: getBasicHeaders(),
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || `Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Failed to register:", error);
       throw error;
     }
   };
@@ -71,6 +60,11 @@ export const useAuthApi = () => {
       }
 
       tokenCookie.value = null;
+      userCookie.value = null;
+      permissionsCookie.value = null;
+      rolesCookie.value = null;
+
+      navigateTo("/login");
       return await response.json();
     } catch (error) {
       console.error("Failed to logout:", error);
@@ -78,9 +72,30 @@ export const useAuthApi = () => {
     }
   };
 
+  const hasPermission = (permission) => {
+    if (!permissionsCookie.value) return false;
+    return permissionsCookie.value.includes(permission);
+  };
+
+  const hasRole = (role) => {
+    if (!rolesCookie.value) return false;
+    return rolesCookie.value.includes(role);
+  };
+
+  const isAdmin = () => {
+    return hasRole("admin");
+  };
+
+  const getUser = () => {
+    return userCookie.value;
+  };
+
   return {
     login,
-    register,
     logout,
+    hasPermission,
+    hasRole,
+    isAdmin,
+    getUser,
   };
 };

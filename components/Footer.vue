@@ -4,6 +4,12 @@ import { useFlowbite } from "/composables/useFlowbite";
 import { initFlowbite } from "flowbite";
 
 const yearSuffix = new Date().getFullYear();
+const navLinks = [
+  { text: "Dashboard", to: "/dashboard" },
+  { text: "Users", to: "/users" },
+  { text: "Spareparts", to: "/spareparts" },
+  { text: "Transactions", to: "/transactions" },
+];
 
 onMounted(() => {
   useFlowbite(() => {
@@ -13,37 +19,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <footer class="bg-white shadow-sm dark:bg-gray-800">
+  <footer class="bg-primary shadow-sm mt-auto">
     <div
       class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between"
     >
-      <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+      <span class="text-sm text-white sm:text-center">
         © {{ yearSuffix }}
         <span class="font-medium">Manajemen Sparepart</span>. All Rights
         Reserved.
       </span>
       <ul
-        class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0"
+        class="flex flex-wrap items-center mt-3 text-sm font-medium text-white sm:mt-0"
       >
-        <li>
-          <NuxtLink to="/dashboard" class="hover:underline me-4 md:me-6"
-            >Dashboard</NuxtLink
+        <li v-for="(link, index) in navLinks" :key="link.to">
+          <NuxtLink
+            :to="link.to"
+            class="hover:underline hover:text-secondary"
+            :class="{ 'me-4 md:me-6': index !== navLinks.length - 1 }"
           >
-        </li>
-        <li>
-          <NuxtLink to="/users" class="hover:underline me-4 md:me-6"
-            >Users</NuxtLink
-          >
-        </li>
-        <li>
-          <NuxtLink to="/spareparts" class="hover:underline me-4 md:me-6"
-            >Spareparts</NuxtLink
-          >
-        </li>
-        <li>
-          <NuxtLink to="/transactions" class="hover:underline"
-            >Transactions</NuxtLink
-          >
+            {{ link.text }}
+          </NuxtLink>
         </li>
       </ul>
     </div>

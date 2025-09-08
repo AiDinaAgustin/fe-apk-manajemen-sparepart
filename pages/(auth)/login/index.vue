@@ -19,6 +19,7 @@ const handleSubmit = async () => {
       email: email.value,
       password: password.value,
     });
+    navigateTo("/dashboard");
   } catch (error) {
     errorMsg.value = error.message;
     console.error("Login failed", error);

@@ -1,46 +1,38 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useAuthApi } from "/composables/useAuth";
+import { getGreeting, formatCurrentDate } from "/utils/helper";
 
 useHead({
   title: "Dashboard",
 });
 
+const { getUser, hasPermission } = useAuthApi();
 const userName = ref("Admin");
 const currentTime = ref("");
-
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Selamat Pagi";
-  if (hour < 15) return "Selamat Siang";
-  if (hour < 18) return "Selamat Sore";
-  return "Selamat Malam";
-};
-
+const userRole = ref("");
 const greeting = ref(getGreeting());
 
 onMounted(() => {
-  const user = useCookie("user");
-  if (user.value && user.value.name) {
-    userName.value = user.value.name;
+  const userData = getUser();
+  if (userData && userData.name) {
+    userName.value = userData.name;
   }
 
-  const now = new Date();
-  const options = {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-  currentTime.value = now.toLocaleDateString("id-ID", options);
+  const userCookie = useCookie("user_roles");
+  if (userCookie.value && userCookie.value.length > 0) {
+    userRole.value = userCookie.value[0];
+  }
+
+  currentTime.value = formatCurrentDate();
 });
 </script>
 
 <template>
   <NuxtLayout name="protected">
     <template #header />
-    <section class="max-w-7xl mx-auto p-6">
-      <div class="bg-white rounded-lg shadow-md p-8 mb-6">
+    <section class="max-w-7xl mx-auto">
+      <div class="bg-white rounded-lg shadow-md p-8 my-6">
         <div class="flex items-center justify-between mb-6">
           <div>
             <h1 class="text-3xl font-bold text-gray-800">
@@ -73,6 +65,7 @@ onMounted(() => {
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
           <NuxtLink
+            v-if="hasPermission('user.read')"
             to="/users"
             class="bg-blue-50 hover:bg-blue-100 p-6 rounded-lg transition-colors flex flex-col items-center"
           >
@@ -94,6 +87,7 @@ onMounted(() => {
           </NuxtLink>
 
           <NuxtLink
+            v-if="hasPermission('sparepart.read')"
             to="/spareparts"
             class="bg-green-50 hover:bg-green-100 p-6 rounded-lg transition-colors flex flex-col items-center"
           >
@@ -121,6 +115,10 @@ onMounted(() => {
           </NuxtLink>
 
           <NuxtLink
+            v-if="
+              hasPermission('transaction.read_all') ||
+              hasPermission('transaction.read_detail')
+            "
             to="/transactions"
             class="bg-purple-50 hover:bg-purple-100 p-6 rounded-lg transition-colors flex flex-col items-center"
           >
@@ -144,6 +142,7 @@ onMounted(() => {
           </NuxtLink>
 
           <NuxtLink
+            v-if="hasPermission('report.read')"
             to="/reports"
             class="bg-yellow-50 hover:bg-yellow-100 p-6 rounded-lg transition-colors flex flex-col items-center"
           >
