@@ -9,13 +9,14 @@ useHead({
   title: "Transactions",
 });
 
-const { getTransactions } = useTransactions();
+const { getTransactions, rejectTransaction, approveTransaction } = useTransactions();
 const { hasPermission, hasRole, isAdmin } = useAuthApi();
 
 const toastVisible = ref(false);
 const toastType = ref("success");
 const toastMessage = ref("");
 const toastTimeout = ref(null);
+const actionLoading = ref(false);
 
 const showToast = (type, message, duration = 3000) => {
   toastType.value = type;
@@ -36,15 +37,69 @@ const hideToast = () => {
 const canCreate = computed(
   () => isAdmin() || hasPermission("transaction.create"),
 );
-const canEdit = computed(
-  () => isAdmin() || hasPermission("transaction.update"),
-);
+
 const canDelete = computed(
   () => isAdmin() || hasPermission("transaction.delete"),
 );
-const canApprove = computed(
-  () => isAdmin() || hasPermission("transaction.approve"),
+
+const canEdit = computed(
+  () => isAdmin() || hasPermission("transaction.update"),
 );
+
+const canApprove = computed(() => hasPermission("transaction.approve"));
+const canReject = computed(() => hasPermission("transaction.reject"));
+// const canEdit = computed(() => {
+//   // Staff can only edit their own transactions
+//   if (hasPermission("transaction.update_own")) {
+//     return transaction.value && 
+//            transaction.value.user && 
+//            transaction.value.user.id === getUser()?.id;
+//   }
+//   // Admins can edit any transaction
+//   return hasPermission("transaction.update");
+// });
+
+const handleReject = async (id) => {
+  if (!canReject.value) {
+    showToast("warning", "You don't have permission to reject transactions");
+    return;
+  }
+
+  actionLoading.value = true;
+  try {
+    await rejectTransaction(id);
+    // Instead of fetchTransaction, use fetchTransactions to refresh the list
+    await fetchTransactions();
+    showToast("success", "Transaction rejected successfully");
+  } catch (err) {
+    console.error(`Error rejecting transaction ${id}:`, err);
+    showToast("danger", `Failed to reject transaction: ${err.message}`);
+  } finally {
+    actionLoading.value = false;
+  }
+};
+
+const handleApprove = async (id) => {
+  if (!canApprove.value) {
+    showToast("warning", "You don't have permission to approve transactions");
+    return;
+  }
+
+  actionLoading.value = true;
+  try {
+    await approveTransaction(id);
+    // Instead of fetchTransaction, use fetchTransactions to refresh the list
+    await fetchTransactions();
+    showToast("success", "Transaction approved successfully");
+  } catch (err) {
+    console.error(`Error approving transaction ${id}:`, err);
+    showToast("danger", `Failed to approve transaction: ${err.message}`);
+  } finally {
+    actionLoading.value = false;
+  }
+};
+
+
 
 const transactions = ref([]);
 const loading = ref(true);
@@ -344,28 +399,7 @@ onMounted(() => {
                   </svg>
                   <span class="sr-only">View</span>
                 </NuxtLink>
-                <NuxtLink
-                  v-if="canEdit && transaction.status === 'pending'"
-                  :to="`/dashboard/transactions/${transaction.id}/edit`"
-                  class="bg-blue-600 hover:bg-blue-800 text-white p-2 rounded-md"
-                  title="Edit"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                    ></path>
-                  </svg>
-                  <span class="sr-only">Edit</span>
-                </NuxtLink>
+                
                 <button
                   v-if="canDelete && transaction.status === 'pending'"
                   @click="openDeleteModal(transaction)"
